@@ -12,9 +12,9 @@ extern int IIC_Address;
 void epd_hal_init(){
  IIC_Address = 0x14;
  DEV_ModuleInit();
+ pthread_create(&touch_thread, NULL, touch_irq_thread, NULL);
  EPD_2in13_V4_Init(EPD_2IN13_V4_FULL);
  EPD_2in13_V4_Clear();
- EPD_2in13_V4_Sleep();
  GT_Init();
  DEV_Delay_ms(100);
  EPD_2in13_V4_Sleep();

@@ -5,7 +5,7 @@
 extern GT1151_Dev Dev_Now;
 extern int IIC_Address;
 pthread_t touch_thread;
-extern UBYTE thread_flag = 1;
+UBYTE thread_flag = 1;
 
 void *touch_irq_thread(void *arg)
 {
