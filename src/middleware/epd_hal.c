@@ -32,57 +32,41 @@ waveshare needs 1 bit per pixel , 8 pixels are packed into 1 bytes */
 /* 250 pixels / 8 pixels per byte = 31.25 bytes that is 32 */
 /* Eink uses MSB therefore we start from 7th index of the byte sequence */
 void epd_hal_flush(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map)
-{  
-   printf("flush called: x1=%d y1=%d x2=%d y2=%d\n", area->x1, area->y1, area->x2, area->y2);
-   int stride = (16);  // LVGL actual stride = 32 bytes
-   int w = area->x2 - area->x1 + 1;
+{
+    printf("flush called: x1=%d y1=%d x2=%d y2=%d\n", area->x1, area->y1, area->x2, area->y2);
 
     for (int y = area->y1; y <= area->y2; y++) {
-        for (int x = area->x1; x <= area->x2; x++) {
-            if (x >= 250) continue;
-        
-        int local_x = x - area->x1;
         int local_y = y - area->y1;
-
-        int src_byte = local_y * stride + local_x / 8;
-        int src_bit  = 7 - (local_x % 8);
-        int pixel    = (px_map[src_byte] >> src_bit) & 1;
-
-        int dst_byte = y * 16 + x / 8;
-        int dst_bit  = 7 - (x % 8);
-
-        if (pixel)
-            epd_buf[dst_byte] &=  ~(1 << dst_bit);
-        else
-            epd_buf[dst_byte] |= (1 << dst_bit);
-    }
-}
-       // count dark pixels
-        int dark = 0;
-        for (int i = 0; i < 32 * 122; i++) {
-           if (epd_buf[i] != 0xFF) dark++;
+        uint8_t *src = px_map + local_y * 16;
+        uint8_t *dst = epd_buf + y * 16;
+        for (int b = 0; b < 16; b++) {
+            dst[b] = src[b];
         }
-        printf("dark bytes in buf: %d\n", dark);
-	if (lv_display_flush_is_last(disp))
-	{
-		partial_refresh_counter++;
-                printf("pushing to display, counter=%d\n", partial_refresh_counter);
+    }
 
-		if (partial_refresh_counter >=5)
-			{
-				EPD_2in13_V4_Init(EPD_2IN13_V4_FULL);
-				EPD_2in13_V4_Display(epd_buf);
-				EPD_2in13_V4_Sleep();
-				partial_refresh_counter=0;
-			}
-		else
-		{
-			EPD_2in13_V4_Init(EPD_2IN13_V4_PART);
-			EPD_2in13_V4_Display_Partial_Wait(epd_buf);
-			EPD_2in13_V4_Sleep();
-		}
-	}
-	lv_display_flush_ready(disp);
+    int dark = 0;
+    for (int i = 0; i < 16 * 250; i++) {
+        if (epd_buf[i] != 0xFF) dark++;
+    }
+    printf("dark bytes in buf: %d\n", dark);
+
+    if (lv_display_flush_is_last(disp)) {
+        partial_refresh_counter++;
+        printf("pushing to display, counter=%d\n", partial_refresh_counter);
+        if (partial_refresh_counter >= 5) {
+            EPD_2in13_V4_Init(EPD_2IN13_V4_FULL);
+            EPD_2in13_V4_Display(epd_buf);
+            EPD_2in13_V4_Init(EPD_2IN13_V4_PART);
+            EPD_2in13_V4_Display_Partial_Wait(epd_buf);
+            EPD_2in13_V4_Sleep();
+            partial_refresh_counter = 0;
+        } else {
+            EPD_2in13_V4_Init(EPD_2IN13_V4_PART);
+            EPD_2in13_V4_Display_Partial_Wait(epd_buf);
+            EPD_2in13_V4_Sleep();
+        }
+    }
+    lv_display_flush_ready(disp);
 }
 lv_display_t* epd_hal_create_display(){
 	static lv_display_t *disp;

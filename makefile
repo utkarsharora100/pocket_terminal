@@ -2,8 +2,8 @@
 CC = gcc
 CXX = g++
 TARGET = pocket_terminal
-CFLAGS = -O2 -Wall -I. -Isrc/ui -Isrc/driver -Isrc/middleware
-LDFLAGS = -lm -lgpiod -lpthread
+CFLAGS = -O2 -Wall -D USE_LGPIO_LIB -I. -Isrc/ui -Isrc/driver -Isrc/middleware
+LDFLAGS = -lm -lgpiod -lpthread -llgpio
 
 C_SRCS = main.c $(wildcard src/ui/*.c) $(wildcard src/driver/*.c) $(wildcard src/middleware/*.c) $(shell find lvgl/src -name "*.c")
 CPP_SRCS = src/ui/eez-flow.cpp
