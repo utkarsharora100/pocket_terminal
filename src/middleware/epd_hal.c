@@ -8,6 +8,7 @@
 /* string.h allows us to use memset for clearing the framebuffer */
 static uint8_t draw_buf[32 * 122];
 static uint8_t epd_buf[16*250];
+static uint8_t stage_buf[16 * 250]; 
 static int partial_refresh_counter = 5;
 extern int IIC_Address;
 
@@ -15,6 +16,7 @@ void epd_hal_init(){
     IIC_Address = 0x14;
     DEV_ModuleInit();
     memset(epd_buf, 0xFF, sizeof(epd_buf));
+    memset(stage_buf, 0xFF, sizeof(stage_buf));
     pthread_create(&touch_thread, NULL, touch_irq_thread, NULL);
     EPD_2in13_V4_Init(EPD_2IN13_V4_FULL);
     EPD_2in13_V4_Clear();
@@ -35,7 +37,7 @@ waveshare needs 1 bit per pixel , 8 pixels are packed into 1 bytes */
 void epd_hal_flush(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map)
 {
     int stride = 32; // LVGL: 250px wide at I1 = ceil(250/8) = 32 bytes per row
-
+    printf("flush: x1=%d y1=%d x2=%d y2=%d\n", area->x1, area->y1, area->x2, area->y2);
     for (int y = area->y1; y <= area->y2; y++) {
         int local_y = y - area->y1;
         for (int x = area->x1; x <= area->x2; x++) {
@@ -51,27 +53,28 @@ void epd_hal_flush(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map)
             // Image[i + j*16] → EPD (X_byte=i, Y_row=j)
             // We want: LVGL (x,y) → physical (x_phys=x, y_phys=y)
             // So: j = x (Y_row = LVGL_x), i = y/8 (X_byte = LVGL_y/8)
-            int dst_byte = ((249-x+61)) * 16 + y / 8;
+            int dst_byte = (249-x) * 16 + y / 8;
             int dst_bit  = 7 - (y % 8);
 
             if (pixel)
-                epd_buf[dst_byte] |=  (1 << dst_bit);
+                stage_buf[dst_byte] |=  (1 << dst_bit);
             else
-                epd_buf[dst_byte] &= ~(1 << dst_bit);
+                stage_buf[dst_byte] &= ~(1 << dst_bit);
         }
     }
 
     if (lv_display_flush_is_last(disp)) {
         partial_refresh_counter++;
+	memcpy(epd_buf, stage_buf, sizeof(epd_buf));
         if (partial_refresh_counter >= 5) {
             EPD_2in13_V4_Init(EPD_2IN13_V4_FULL);
             EPD_2in13_V4_Display_Base(epd_buf);
-            EPD_2in13_V4_Init(EPD_2IN13_V4_PART);
+            EPD_2in13_V4_Init(EPD_2IN13_V4_PART); 
             EPD_2in13_V4_Display_Partial_Wait(epd_buf);
             EPD_2in13_V4_Sleep();
             partial_refresh_counter = 0;
         } else {
-            EPD_2in13_V4_Init(EPD_2IN13_V4_PART);
+            //EPD_2in13_V4_Init(EPD_2IN13_V4_PART);
             EPD_2in13_V4_Display_Partial_Wait(epd_buf);
             EPD_2in13_V4_Sleep();
         }
