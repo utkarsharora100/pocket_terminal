@@ -5,7 +5,7 @@
 #include <pthread.h>
 #include "GT1151.h"
 #include "touch_hal.h"
-/* string.h allows us to use memset for clearing the framebuffer */
+/*The string.h allows us to use memset for clearing the framebuffer */
 static uint8_t draw_buf[32 * 122];
 static uint8_t epd_buf[16*250];
 static uint8_t stage_buf[16 * 250]; 
