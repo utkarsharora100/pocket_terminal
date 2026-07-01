@@ -12,8 +12,8 @@
 
 objects_t objects;
 
-static const char *screen_names[] = { "Main", "Wifi" };
-static const char *object_names[] = { "main", "wifi", "roller1", "text_area_1", "obj0" };
+static const char *screen_names[] = { "Main", "terminal_textarea" };
+static const char *object_names[] = { "main", "terminal_textarea", "k1", "main_keyboard", "obj0", "terminal_area", "obj1" };
 
 //
 // Event handlers
@@ -21,25 +21,22 @@ static const char *object_names[] = { "main", "wifi", "roller1", "text_area_1", 
 
 lv_obj_t *tick_value_change_obj;
 
-static void event_handler_cb_main_roller1(lv_event_t *e) {
+static void event_handler_cb_main_k1(lv_event_t *e) {
     lv_event_code_t event = lv_event_get_code(e);
     void *flowState = lv_event_get_user_data(e);
     (void)flowState;
     
-    if (event == LV_EVENT_VALUE_CHANGED) {
-        lv_obj_t *ta = lv_event_get_target_obj(e);
-        if (tick_value_change_obj != ta) {
-            int32_t value = lv_roller_get_selected(ta);
-            assignIntegerProperty(flowState, 0, 3, value, "Failed to assign Selected in Roller widget");
-        }
-    }
-    if (event == LV_EVENT_DOUBLE_CLICKED) {
+    if (event == LV_EVENT_READY) {
         e->user_data = (void *)0;
         flowPropagateValueLVGLEvent(flowState, 0, 0, e);
     }
+    if (event == LV_EVENT_READY) {
+        e->user_data = (void *)0;
+        action_send_command(e);
+    }
 }
 
-static void event_handler_cb_main_text_area_1(lv_event_t *e) {
+static void event_handler_cb_main_main_keyboard(lv_event_t *e) {
     lv_event_code_t event = lv_event_get_code(e);
     void *flowState = lv_event_get_user_data(e);
     (void)flowState;
@@ -58,9 +55,34 @@ static void event_handler_cb_main_obj0(lv_event_t *e) {
     void *flowState = lv_event_get_user_data(e);
     (void)flowState;
     
-    if (event == LV_EVENT_CLICKED) {
+    if (event == LV_EVENT_PRESSED) {
         e->user_data = (void *)0;
         flowPropagateValueLVGLEvent(flowState, 3, 0, e);
+    }
+}
+
+static void event_handler_cb_terminal_textarea_terminal_area(lv_event_t *e) {
+    lv_event_code_t event = lv_event_get_code(e);
+    void *flowState = lv_event_get_user_data(e);
+    (void)flowState;
+    
+    if (event == LV_EVENT_VALUE_CHANGED) {
+        lv_obj_t *ta = lv_event_get_target_obj(e);
+        if (tick_value_change_obj != ta) {
+            const char *value = lv_textarea_get_text(ta);
+            assignStringProperty(flowState, 0, 3, value, "Failed to assign Text in Textarea widget");
+        }
+    }
+}
+
+static void event_handler_cb_terminal_textarea_obj1(lv_event_t *e) {
+    lv_event_code_t event = lv_event_get_code(e);
+    void *flowState = lv_event_get_user_data(e);
+    (void)flowState;
+    
+    if (event == LV_EVENT_PRESSED) {
+        e->user_data = (void *)0;
+        flowPropagateValueLVGLEvent(flowState, 2, 0, e);
     }
 }
 
@@ -78,45 +100,45 @@ void create_screen_main() {
     {
         lv_obj_t *parent_obj = obj;
         {
-            // roller1
-            lv_obj_t *obj = lv_roller_create(parent_obj);
-            objects.roller1 = obj;
-            lv_obj_set_pos(obj, 0, 0);
-            lv_obj_set_size(obj, 85, 122);
-            lv_roller_set_options(obj, "a\nb\nc", LV_ROLLER_MODE_INFINITE);
-            lv_obj_add_event_cb(obj, event_handler_cb_main_roller1, LV_EVENT_ALL, flowState);
-            lv_obj_set_style_bg_color(obj, lv_color_hex(0x000000), LV_PART_SELECTED | LV_STATE_DEFAULT);
+            // k1
+            lv_obj_t *obj = lv_keyboard_create(parent_obj);
+            objects.k1 = obj;
+            lv_obj_set_pos(obj, 0, 36);
+            lv_obj_set_size(obj, 250, 86);
+            lv_obj_add_event_cb(obj, event_handler_cb_main_k1, LV_EVENT_ALL, flowState);
+            lv_obj_set_style_align(obj, LV_ALIGN_DEFAULT, LV_PART_MAIN | LV_STATE_DEFAULT);
         }
         {
-            // text_area_1
+            // Main_Keyboard
             lv_obj_t *obj = lv_textarea_create(parent_obj);
-            objects.text_area_1 = obj;
-            lv_obj_set_pos(obj, 85, 0);
-            lv_obj_set_size(obj, 124, 41);
+            objects.main_keyboard = obj;
+            lv_obj_set_pos(obj, 0, 0);
+            lv_obj_set_size(obj, 218, 36);
             lv_textarea_set_max_length(obj, 128);
-            lv_textarea_set_one_line(obj, false);
+            lv_textarea_set_one_line(obj, true);
             lv_textarea_set_password_mode(obj, false);
-            lv_obj_add_event_cb(obj, event_handler_cb_main_text_area_1, LV_EVENT_ALL, flowState);
+            lv_obj_add_event_cb(obj, event_handler_cb_main_main_keyboard, LV_EVENT_ALL, flowState);
+            lv_obj_remove_flag(obj, LV_OBJ_FLAG_CLICK_FOCUSABLE);
+            lv_obj_set_style_bg_color(obj, lv_color_hex(0x000000), LV_PART_CURSOR | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_opa(obj, 255, LV_PART_CURSOR | LV_STATE_DEFAULT);
         }
         {
             lv_obj_t *obj = lv_button_create(parent_obj);
             objects.obj0 = obj;
-            lv_obj_set_pos(obj, 210, 0);
-            lv_obj_set_size(obj, 40, 41);
+            lv_obj_set_pos(obj, 218, 0);
+            lv_obj_set_size(obj, 32, 32);
             lv_obj_add_event_cb(obj, event_handler_cb_main_obj0, LV_EVENT_ALL, flowState);
-            {
-                lv_obj_t *parent_obj = obj;
-                {
-                    lv_obj_t *obj = lv_label_create(parent_obj);
-                    lv_obj_set_pos(obj, 0, 0);
-                    lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-                    lv_obj_set_style_align(obj, LV_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_text_font(obj, &lv_font_montserrat_20, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_label_set_text_static(obj, ">");
-                }
-            }
+            lv_obj_set_style_bg_opa(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_opa(obj, 0, LV_PART_MAIN | LV_STATE_CHECKED | LV_STATE_PRESSED);
+        }
+        {
+            lv_obj_t *obj = lv_image_create(parent_obj);
+            lv_obj_set_pos(obj, 218, 0);
+            lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_image_set_src(obj, &img_collapse);
         }
     }
+    lv_keyboard_set_textarea(objects.k1, objects.main_keyboard);
     
     tick_screen_main();
 }
@@ -125,56 +147,78 @@ void tick_screen_main() {
     void *flowState = getFlowState(0, 0);
     (void)flowState;
     {
-        if (!(lv_obj_get_state(objects.roller1) & LV_STATE_EDITED)) {
-            int32_t new_val = evalIntegerProperty(flowState, 0, 3, "Failed to evaluate Selected in Roller widget");
-            int32_t cur_val = lv_roller_get_selected(objects.roller1);
-            if (new_val != cur_val) {
-                tick_value_change_obj = objects.roller1;
-                lv_roller_set_selected(objects.roller1, new_val, LV_ANIM_OFF);
-                tick_value_change_obj = NULL;
-            }
-        }
-    }
-    {
         const char *new_val = evalTextProperty(flowState, 2, 3, "Failed to evaluate Text in Textarea widget");
-        const char *cur_val = lv_textarea_get_text(objects.text_area_1);
-        uint32_t max_length = lv_textarea_get_max_length(objects.text_area_1);
+        const char *cur_val = lv_textarea_get_text(objects.main_keyboard);
+        uint32_t max_length = lv_textarea_get_max_length(objects.main_keyboard);
         if (strncmp(new_val, cur_val, max_length) != 0) {
-            tick_value_change_obj = objects.text_area_1;
-            lv_textarea_set_text(objects.text_area_1, new_val);
+            tick_value_change_obj = objects.main_keyboard;
+            lv_textarea_set_text(objects.main_keyboard, new_val);
             tick_value_change_obj = NULL;
         }
     }
 }
 
-void create_screen_wifi() {
+void create_screen_terminal_textarea() {
     void *flowState = getFlowState(0, 1);
     (void)flowState;
     lv_obj_t *obj = lv_obj_create(0);
-    objects.wifi = obj;
+    objects.terminal_textarea = obj;
     lv_obj_set_pos(obj, 0, 0);
     lv_obj_set_size(obj, 250, 122);
     {
         lv_obj_t *parent_obj = obj;
         {
-            lv_obj_t *obj = lv_list_create(parent_obj);
-            lv_obj_set_pos(obj, 125, 0);
-            lv_obj_set_size(obj, 125, 122);
+            // terminal_area
+            lv_obj_t *obj = lv_textarea_create(parent_obj);
+            objects.terminal_area = obj;
+            lv_obj_set_pos(obj, 0, 0);
+            lv_obj_set_size(obj, 250, 122);
+            lv_textarea_set_max_length(obj, 1280);
+            lv_textarea_set_one_line(obj, false);
+            lv_textarea_set_password_mode(obj, false);
+            lv_obj_add_event_cb(obj, event_handler_cb_terminal_textarea_terminal_area, LV_EVENT_ALL, flowState);
+            lv_obj_set_style_bg_opa(obj, 0, LV_PART_CURSOR | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_color(obj, lv_color_hex(0xffffff), LV_PART_CURSOR | LV_STATE_DEFAULT);
+        }
+        {
+            lv_obj_t *obj = lv_button_create(parent_obj);
+            objects.obj1 = obj;
+            lv_obj_set_pos(obj, 218, 0);
+            lv_obj_set_size(obj, 32, 32);
+            lv_obj_add_event_cb(obj, event_handler_cb_terminal_textarea_obj1, LV_EVENT_ALL, flowState);
+            lv_obj_set_style_bg_opa(obj, 0, LV_PART_MAIN | LV_STATE_CHECKED | LV_STATE_PRESSED);
+            lv_obj_set_style_bg_opa(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+        }
+        {
+            lv_obj_t *obj = lv_image_create(parent_obj);
+            lv_obj_set_pos(obj, 218, 0);
+            lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_image_set_src(obj, &img_keyboard_button);
         }
     }
     
-    tick_screen_wifi();
+    tick_screen_terminal_textarea();
 }
 
-void tick_screen_wifi() {
+void tick_screen_terminal_textarea() {
     void *flowState = getFlowState(0, 1);
     (void)flowState;
+    {
+        const char *new_val = evalTextProperty(flowState, 0, 3, "Failed to evaluate Text in Textarea widget");
+        const char *cur_val = lv_textarea_get_text(objects.terminal_area);
+        uint32_t max_length = lv_textarea_get_max_length(objects.terminal_area);
+        if (strncmp(new_val, cur_val, max_length) != 0) {
+            tick_value_change_obj = objects.terminal_area;
+            lv_textarea_set_text(objects.terminal_area, new_val);
+            tick_value_change_obj = NULL;
+        }
+    }
 }
 
 typedef void (*tick_screen_func_t)();
 tick_screen_func_t tick_screen_funcs[] = {
     tick_screen_main,
-    tick_screen_wifi,
+    tick_screen_terminal_textarea,
 };
 void tick_screen(int screen_index) {
     if (screen_index >= 0 && screen_index < 2) {
@@ -274,5 +318,5 @@ void create_screens() {
     
     // Create screens
     create_screen_main();
-    create_screen_wifi();
+    create_screen_terminal_textarea();
 }

@@ -4,7 +4,7 @@
 #include "src/middleware/epd_hal.h"
 #include "src/middleware/touch_hal.h"
 #include "src/middleware/tick_hal.h"
-
+#include "src/middleware/pty_hal.h"
 int main(){
 
 epd_hal_init();
@@ -17,6 +17,7 @@ lv_tick_set_cb(tick_hal_get_ms);
 epd_hal_create_display();
 touch_hal_create_indev();
 ui_init();
+pty_init();
 while(1) /* I have been waiting for sooooooo long to write this line. */
 {
 	lv_timer_handler();

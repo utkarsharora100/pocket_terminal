@@ -51,8 +51,8 @@ void epd_hal_flush(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map)
             int src_bit  = 7 - (local_x % 8);
             int pixel    = (px_map[src_byte] >> src_bit) & 1;
 
-            int dst_byte = (249 - x) * 16 + y / 8;
-            int dst_bit  = 7 - (y % 8);
+            int dst_byte = (249-x)*16+y/8;
+	    int dst_bit = 7 - (y%8);
 
             if (pixel)
                 stage_buf[dst_byte] |=  (1 << dst_bit);

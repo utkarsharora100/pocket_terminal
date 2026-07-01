@@ -13,12 +13,17 @@ extern "C" {
 // Flow global variables
 
 enum FlowGlobalVariables {
-    FLOW_GLOBAL_VARIABLE_SELECTED = 0,
-    FLOW_GLOBAL_VARIABLE_TYPED = 1,
-    FLOW_GLOBAL_VARIABLE_TERMINAL_BUFFER = 2
+    FLOW_GLOBAL_VARIABLE_NONE
 };
 
 // Native global variables
+
+extern const char *get_var_input_terminal();
+extern void set_var_input_terminal(const char *value);
+extern const char *get_var_send_terminal();
+extern void set_var_send_terminal(const char *value);
+extern const char *get_var_output_terminal();
+extern void set_var_output_terminal(const char *value);
 
 #ifdef __cplusplus
 }

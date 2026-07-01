@@ -26,8 +26,9 @@ void touch_hal_read(lv_indev_t* indev, lv_indev_data_t* data){
 	GT_Scan();
 	if (Dev_Now.TouchpointFlag && Dev_Now.TouchCount>0) {
 		data->state = LV_INDEV_STATE_PRESSED;
+		printf("Shifted coords -  X=%d Y=%d\n", Dev_Now.Y[0], 121-Dev_Now.X[0]);
 		data->point.x = Dev_Now.Y[0];
-		data->point.y = Dev_Now.X[0];
+		data->point.y = 121 - Dev_Now.X[0];
 		Dev_Now.TouchpointFlag = 0;
 	}
 	else{
