@@ -3,6 +3,8 @@
 
 #include <lvgl/lvgl.h>
 
+LV_FONT_DECLARE(lv_font_unscii_8);
+
 #ifdef __cplusplus
 extern "C" {
 #endif

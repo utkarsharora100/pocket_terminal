@@ -9,7 +9,7 @@
 static uint8_t draw_buf[32 * 122];
 static uint8_t epd_buf[16*250];
 static uint8_t stage_buf[16 * 250]; 
-static int partial_refresh_counter = 5;
+static int partial_refresh_counter = 100;
 extern int IIC_Address;
 
 void epd_hal_init(){
@@ -21,7 +21,6 @@ void epd_hal_init(){
     EPD_2in13_V4_Init(EPD_2IN13_V4_FULL);
     EPD_2in13_V4_Clear();
     GT_Init();
-    DEV_Delay_ms(100);
     EPD_2in13_V4_Sleep();
 }
 
@@ -64,7 +63,7 @@ void epd_hal_flush(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map)
     if (lv_display_flush_is_last(disp)) {
         memcpy(epd_buf, stage_buf, sizeof(epd_buf));
         partial_refresh_counter++;
-        if (partial_refresh_counter >= 5) {
+        if (partial_refresh_counter >= 100) {
             EPD_2in13_V4_Init(EPD_2IN13_V4_FULL);
             EPD_2in13_V4_Display_Base(epd_buf);
             EPD_2in13_V4_Init(EPD_2IN13_V4_PART);

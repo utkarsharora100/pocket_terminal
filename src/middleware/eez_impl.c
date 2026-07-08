@@ -3,7 +3,8 @@
 #include "pty_hal.h"
 #include <string.h>
 #include <stdio.h>
-
+#include "../ui/screens.h"
+#include "../ui/styles.h"
 /* ── input_terminal — user input string ── */
 static char input_terminal[1024] = {0};
 
@@ -52,4 +53,11 @@ const char *get_var_send_terminal(void) { return send_terminal; }
 void set_var_send_terminal(const char *value) {
     strncpy(send_terminal, value, sizeof(send_terminal) - 1);
     send_terminal[sizeof(send_terminal) - 1] = '\0';
+}
+
+void eez_impl_post_init(void)
+{
+    lv_obj_set_style_text_font(objects.terminal_area,
+                               &lv_font_unscii_8,
+                               LV_PART_MAIN);
 }

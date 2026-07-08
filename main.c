@@ -17,6 +17,7 @@ lv_tick_set_cb(tick_hal_get_ms);
 epd_hal_create_display();
 touch_hal_create_indev();
 ui_init();
+eez_impl_post_init();
 pty_init();
 while(1) /* I have been waiting for sooooooo long to write this line. */
 {

@@ -39,7 +39,10 @@ void pty_init(void)
 {
     pid_t pid = forkpty(&master_fd, NULL, NULL, NULL);
     if (pid == 0) {
-        execl("/bin/bash", "bash", NULL);
+        setenv("PS1", "# ", 1);
+        setenv("PS2", "", 1);
+	setenv("TERM","dumb",1);
+        execl("/bin/bash", "bash", "--norc", "--noprofile", NULL);
         _exit(1);
     }
     pthread_create(&pty_thread, NULL, pty_read_thread, NULL);
